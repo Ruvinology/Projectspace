@@ -105,9 +105,13 @@ class Bootattack:
         return pygame.Rect(self.x,self.y,self.size,self.size)
 
 class Astronaut:
-    def __init__(self):
-        self.x = random.randint(0,width - 50)
-        self.y = random.randint(0,height - 50)
+    def __init__(self,rocket_x,rocket_y,safe_radius =200):
+        while True:
+            self.x = random.randint(0,width - 50)
+            self.y = random.randint(0,height - 50)
+            distance_to_rocket = ((self.x - rocket_x) ** 2 + (self.y - rocket_y) ** 2) ** 0.5
+            if distance_to_rocket > safe_radius:
+                break
         self.speed_x = random.choice([-1,1]) * random.randint(1,3)
         self.speed_y = random.choice([-1,1]) * random.randint(1,3)
 
@@ -166,7 +170,7 @@ def show_front_page():
 def main():
     lasers = []
     boot_attacks =[]
-    astronauts = [Astronaut() for _ in range(5)]
+    astronauts = [Astronaut(rocket_x,rocket_y) for _ in range(5)]
     global rocket_x,rocket_y,rocket_direction
 
 
@@ -193,7 +197,7 @@ def main():
                     rocket_x,rocket_y = width //2,height // 2
                     lasers.clear()
                     boot_attacks.clear()
-                    astronauts =[Astronaut()for _ in range(5)]
+                    astronauts =[Astronaut(rocket_x,rocket_y) for _ in range(5)]
                 elif event.key == pygame.K_q:
                     running = False
 
