@@ -4,7 +4,7 @@ import random
 pygame.init()
 
 
-width = 800# THISis the width#
+width = 1300# THISis the width#
 height = 800
 
 
@@ -19,37 +19,39 @@ screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Space Wars")
 
 
-rocket_image = pygame.image.load(r'C:\Users\Windows 10\Videos\photo_2024-06-27_00-18-22.png')
+rocket_image = pygame.image.load('images/rocket.png')
 rocket_image = pygame.transform.scale(rocket_image, (rocket_width, rocket_height))
 rocket_direction = 0
 
-astronaut_image = pygame.image.load(r'C:\Users\Windows 10\Videos\asteroid-planet-icon-cartoon-asteroid-planet-vector-icon-web-design-isolated-white-background_98402-48666.png')
+astronaut_image = pygame.image.load('images/collide.png')
 astronaut_image = pygame.transform.scale(astronaut_image,(60,60))
 
-background_image = pygame.image.load(r'C:\Users\Windows 10\Downloads\space-4984262_960_720 (1).jpg')
+background_image = pygame.image.load('images/back.png')
 background_image = pygame.transform.scale(background_image, (width, height))
 
-front_page_bg_image = pygame.image.load(r'D:\childs play page\656addcb903eb62d1eb7acf388024be9.jpeg')
+front_page_bg_image = pygame.image.load('images/startpage.png')
 front_page_bg_image = pygame.transform.scale(front_page_bg_image, (width, height))
 
-game_over_bg_image = pygame.image.load(r'D:\childs play page\88d160224fa5e0388ceab5fd51148e63.jpeg')
+game_over_bg_image = pygame.image.load('images/gameover.png')
 game_over_bg_image = pygame.transform.scale(game_over_bg_image, (width, height))
 
 
 
-pygame.mixer.music.load(r'C:\Users\Windows 10\Downloads\Untitled video - Made with Clipchamp (14).mp3')
+pygame.mixer.music.load('sounds/Star_Wars_-_Duel_Of_The_Fates_The_Noisy_Freaks_Dead_CAT_Bounce_Remix_(mp3.pm).mp3')
 pygame.mixer.music.play(-1)
-
-collision_sound = pygame.mixer.Sound(r'C:\Users\Windows 10\Downloads\Untitled video - Made with Clipchamp (15).mp3')
-destroy_sound = pygame.mixer.Sound(r'C:\Users\Windows 10\Downloads\Untitled video - Made with Clipchamp (17).mp3')
+pygame.mixer.music.set_volume(0.2)
+collision_sound = pygame.mixer.Sound('sounds/collision.mp3')
+destroy_sound = pygame.mixer.Sound('sounds/destroy.mp3')
 destroy_sound.set_volume(0.6)
-laser_sound = pygame.mixer.Sound(r'C:\Users\Windows 10\Downloads\Untitled video - Made with Clipchamp (16).mp3')
+laser_sound = pygame.mixer.Sound('sounds/laser.mp3')
 laser_sound.set_volume(0.3)
-boot_attack_sound = pygame.mixer.Sound(r'C:\Users\Windows 10\Downloads\Untitled video - Made with Clipchamp (18).mp3')
+boot_attack_sound = pygame.mixer.Sound('sounds/boot_attack.mp3')
 laser_sound.set_volume(0.6)
-font_large = pygame.font.Font(None,74)
-font_small = pygame.font.Font(None,42)
-font_too_small = pygame.font.Font(None,28)
+
+
+font_large = pygame.font.Font(None,120)
+font_small = pygame.font.Font(None,70)
+font_too_small = pygame.font.Font(None,50)
 def get_rotated_image(image, angle):
     return pygame.transform.rotate(image, angle)
 
@@ -150,9 +152,9 @@ def show_front_page():
     creater_button = font_too_small.render("By Dark Might",True,(255,255,255,))
 
     title_rect = title.get_rect(center =(width //2,height //3+60))
-    play_rect = play_button.get_rect(center =(width //2 , height //2+20))
-    quit_rect = quit_button.get_rect(center =(width //  2, height // 2+70))
-    creater_rect = creater_button.get_rect(center= (width // 2+ 70,height // 3+90 ))
+    play_rect = play_button.get_rect(center =(width //2 , height //2+70))
+    quit_rect = quit_button.get_rect(center =(width //  2, height // 2+130))
+    creater_rect = creater_button.get_rect(center= (width // 2+100,height // 3+115 ))
     pygame.display.flip()
 
 
@@ -170,7 +172,7 @@ def show_front_page():
 def main():
     lasers = []
     boot_attacks =[]
-    astronauts = [Astronaut(rocket_x,rocket_y) for _ in range(5)]
+    astronauts = [Astronaut(rocket_x,rocket_y) for _ in range(8)]
     global rocket_x,rocket_y,rocket_direction
 
 
@@ -197,7 +199,7 @@ def main():
                     rocket_x,rocket_y = width //2,height // 2
                     lasers.clear()
                     boot_attacks.clear()
-                    astronauts =[Astronaut(rocket_x,rocket_y) for _ in range(5)]
+                    astronauts =[Astronaut(rocket_x,rocket_y) for _ in range(8)]
                 elif event.key == pygame.K_q:
                     running = False
 
