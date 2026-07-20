@@ -38,7 +38,8 @@ game_over_bg_image = pygame.transform.scale(game_over_bg_image, (width, height))
 
 
 
-pygame.mixer.music.load('sounds/background_music.ogg')
+MUSIC_PATH = 'sounds/Star_Wars_-_Duel_Of_The_Fates_The_Noisy_Freaks_Dead_CAT_Bounce_Remix_(mp3.pm).ogg'
+# Music starts after the player clicks Play (browser autoplay restriction)
 pygame.mixer.music.set_volume(0.2)
 collision_sound = pygame.mixer.Sound('sounds/collision.ogg')
 destroy_sound = pygame.mixer.Sound('sounds/destroy.ogg')
@@ -46,7 +47,7 @@ destroy_sound.set_volume(0.6)
 laser_sound = pygame.mixer.Sound('sounds/laser.ogg')
 laser_sound.set_volume(0.3)
 boot_attack_sound = pygame.mixer.Sound('sounds/boot_attack.ogg')
-laser_sound.set_volume(0.6)
+boot_attack_sound.set_volume(0.6)
 
 
 font_large = pygame.font.Font(None,120)
@@ -142,7 +143,6 @@ def show_game_over_screen():
     screen.blit(text,(width// 2 - text.get_width()//2,height//2 - text.get_height()//2))
     text_small = font_small.render("Press R to Restart or Q to Quit", True,(255,255,255))
     screen.blit(text_small,(width// 2 -text_small.get_width()//2,height// 2 + text.get_height()))
-    pygame.display.flip()
 
 def show_front_page():
     screen.blit(front_page_bg_image,(0,0))
@@ -155,32 +155,36 @@ def show_front_page():
     play_rect = play_button.get_rect(center =(width //2 , height //2+70))
     quit_rect = quit_button.get_rect(center =(width //  2, height // 2+130))
     creater_rect = creater_button.get_rect(center= (width // 2+100,height // 3+115 ))
-    pygame.display.flip()
-
-
-
     screen.blit(title,title_rect)
     screen.blit(play_button, play_rect)
     screen.blit(quit_button, quit_rect)
     screen.blit(creater_button,creater_rect)
 
-    pygame.display.flip()
 
     return play_rect,quit_rect
 
 
 async def main():
+    global rocket_x, rocket_y, rocket_direction
+
     lasers = []
-    boot_attacks =[]
-    astronauts = [Astronaut(rocket_x,rocket_y) for _ in range(8)]
-    global rocket_x,rocket_y,rocket_direction
+    boot_attacks = []
+    astronauts = [Astronaut(rocket_x, rocket_y) for _ in range(8)]
 
 
     running = True
     game_over = False
     front_page = True
 
+    clock = pygame.time.Clock()
+    music_loaded = False
+    last_laser_shot = 0
+    last_boot_shot = 0
+    laser_cooldown = 180
+    boot_cooldown = 450
+
     while running:
+        current_time = pygame.time.get_ticks()
         if front_page:
             play_rect,quit_rect = show_front_page()
 
@@ -189,8 +193,17 @@ async def main():
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN and front_page:
                 if play_rect.collidepoint(event.pos):
-                    if not pygame.mixer.music.get_busy():
+                    if not music_loaded:
+                        try:
+                            pygame.mixer.music.load(MUSIC_PATH)
+                            pygame.mixer.music.set_volume(0.2)
+                            music_loaded = True
+                        except pygame.error as error:
+                            print(f"Music could not be loaded: {error}")
+
+                    if music_loaded and not pygame.mixer.music.get_busy():
                         pygame.mixer.music.play(-1)
+
                     front_page = False
                 elif quit_rect.collidepoint(event.pos):
                     running = False
@@ -226,37 +239,41 @@ async def main():
             rocket_x = max(0, min(width - rocket_width, rocket_x))
             rocket_y = max(0, min(height - rocket_height, rocket_y))
 
-            if keys[pygame.K_SPACE]:
+            if keys[pygame.K_SPACE] and current_time - last_laser_shot >= laser_cooldown:
                 if rocket_direction == 270:
                     laser_x = rocket_x + rocket_width
-                    laser_y = rocket_y + rocket_height // 2 -10
+                    laser_y = rocket_y + rocket_height // 2 - 10
                 elif rocket_direction == 0:
-                    laser_x = rocket_x + rocket_width  // 2
+                    laser_x = rocket_x + rocket_width // 2
                     laser_y = rocket_y
                 elif rocket_direction == 90:
                     laser_x = rocket_x
                     laser_y = rocket_y + rocket_height // 2 - 10
-                elif rocket_direction == 180:
+                else:
                     laser_x = rocket_x + rocket_width // 2
                     laser_y = rocket_y + rocket_height
-                lasers.append(Laser(laser_x,laser_y,rocket_direction))
-                laser_sound.play()
 
-            if keys[pygame.K_e]:
+                lasers.append(Laser(laser_x, laser_y, rocket_direction))
+                laser_sound.play()
+                last_laser_shot = current_time
+
+            if keys[pygame.K_e] and current_time - last_boot_shot >= boot_cooldown:
                 if rocket_direction == 270:
-                    boot_x = rocket_x + rocket_width // 1 -10
-                    boot_y = rocket_y + rocket_height // 3 +10
+                    boot_x = rocket_x + rocket_width - 10
+                    boot_y = rocket_y + rocket_height // 3 + 10
                 elif rocket_direction == 0:
                     boot_x = rocket_x + rocket_width // 3 + 5
-                    boot_y = rocket_y + rocket_height // 3 -40
+                    boot_y = rocket_y + rocket_height // 3 - 40
                 elif rocket_direction == 90:
                     boot_x = rocket_x + rocket_width // 6 - 35
                     boot_y = rocket_y + rocket_height // 3 + 8
-                elif rocket_direction == 180:
-                    boot_x = rocket_x + rocket_width // 3 +4
-                    boot_y = rocket_y + rocket_height // 1 - 30
-                boot_attacks.append(Bootattack(boot_x,boot_y,rocket_direction))
+                else:
+                    boot_x = rocket_x + rocket_width // 3 + 4
+                    boot_y = rocket_y + rocket_height - 30
+
+                boot_attacks.append(Bootattack(boot_x, boot_y, rocket_direction))
                 boot_attack_sound.play()
+                last_boot_shot = current_time
 
 
             for laser in lasers:
@@ -270,7 +287,7 @@ async def main():
             lasers = [laser for laser in lasers if 0 <= laser.x <= width and 0 <= laser.y <= height]
             boot_attacks = [boot for boot in boot_attacks if 0 <= boot.x <= width and 0 <= boot.y <= height]
 
-            for laser in lasers:
+            for laser in lasers[:]:
                 for astronaut in astronauts:
                     if laser.get_rect().colliderect(astronaut.get_rect()):
                         astronaut.reset_position()
@@ -278,7 +295,7 @@ async def main():
                         destroy_sound.play()
                         break
 
-            for boot in boot_attacks:
+            for boot in boot_attacks[:]:
                 for astronaut in astronauts:
                     if boot.get_rect().colliderect(astronaut.get_rect()):
                         astronaut.reset_position()
@@ -315,7 +332,7 @@ async def main():
 
 
         pygame.display.flip()
-        pygame.time.Clock().tick(30)
+        clock.tick(30)
         await asyncio.sleep(0)
 
     pygame.quit()
