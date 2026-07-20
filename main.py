@@ -1,3 +1,4 @@
+import asyncio
 import pygame
 import random
 
@@ -37,15 +38,14 @@ game_over_bg_image = pygame.transform.scale(game_over_bg_image, (width, height))
 
 
 
-pygame.mixer.music.load('sounds/Star_Wars_-_Duel_Of_The_Fates_The_Noisy_Freaks_Dead_CAT_Bounce_Remix_(mp3.pm).mp3')
-pygame.mixer.music.play(-1)
+pygame.mixer.music.load('sounds/background_music.ogg')
 pygame.mixer.music.set_volume(0.2)
-collision_sound = pygame.mixer.Sound('sounds/collision.mp3')
-destroy_sound = pygame.mixer.Sound('sounds/destroy.mp3')
+collision_sound = pygame.mixer.Sound('sounds/collision.ogg')
+destroy_sound = pygame.mixer.Sound('sounds/destroy.ogg')
 destroy_sound.set_volume(0.6)
-laser_sound = pygame.mixer.Sound('sounds/laser.mp3')
+laser_sound = pygame.mixer.Sound('sounds/laser.ogg')
 laser_sound.set_volume(0.3)
-boot_attack_sound = pygame.mixer.Sound('sounds/boot_attack.mp3')
+boot_attack_sound = pygame.mixer.Sound('sounds/boot_attack.ogg')
 laser_sound.set_volume(0.6)
 
 
@@ -169,7 +169,7 @@ def show_front_page():
     return play_rect,quit_rect
 
 
-def main():
+async def main():
     lasers = []
     boot_attacks =[]
     astronauts = [Astronaut(rocket_x,rocket_y) for _ in range(8)]
@@ -189,6 +189,8 @@ def main():
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN and front_page:
                 if play_rect.collidepoint(event.pos):
+                    if not pygame.mixer.music.get_busy():
+                        pygame.mixer.music.play(-1)
                     front_page = False
                 elif quit_rect.collidepoint(event.pos):
                     running = False
@@ -314,9 +316,10 @@ def main():
 
         pygame.display.flip()
         pygame.time.Clock().tick(30)
+        await asyncio.sleep(0)
 
     pygame.quit()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
